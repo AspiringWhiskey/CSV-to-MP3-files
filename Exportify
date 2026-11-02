@@ -1,0 +1,30 @@
+import csv
+import subprocess
+
+csv_filename = "songs.csv"  # Rename your export file to this
+
+with open(csv_filename, mode="r", encoding="utf-8") as file:
+    reader = csv.DictReader(file)
+    for row in reader:
+        # Extract fields matching your exact Exportify headers
+        track_name = row["Track Name"]
+        album_name = row["Album Name"]
+        # Replace semicolons with commas for standard audio player compatibility
+        artist_name = row["Artist Name(s)"].replace(";", ", ")
+        genre_name = row["Genres"].replace(";", ", ")
+
+        print(f"Downloading: {track_name} by {artist_name}...")
+
+        # Construct the search term for YouTube
+        search_query = f"ytsearch:{artist_name} {track_name}"
+
+        # Run yt-dlp via system process
+        cmd = [
+            "yt-dlp", search_query,
+            "-x", "--audio-format", "mp3",
+            "--embed-thumbnail",
+            "--postprocessor-args", 
+            f"ffmpeg:-metadata title=\"{track_name}\" -metadata artist=\"{artist_name}\" -metadata album=\"{album_name}\" -metadata genre=\"{genre_name}\""
+        ]
+        
+        subprocess.run(cmd)
